@@ -1,95 +1,69 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client"
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
+import React, { ChangeEvent, useState } from 'react'
 
-export default function Home() {
+export default function page() {
+  const router = useRouter()
+  const [user, setUser] = useState({
+    username: '',
+    password: '',
+  })
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState('')
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setLoading(true)
+    const checkUsername = /[a-zA-Z]/.test(user.username)
+    const checkPassword = /[a-zA-Z]/.test(user.password)
+    if (!checkUsername || !checkPassword) {
+      return setLoading(false)
+    };
+    setLoading(false)
+    const response = await axios.post('http://localhost:8080/login', {
+      username: user.username,
+      password: user.password,
+    }, { withCredentials: true }).catch(err => console.log(err))
+    if (response) return router.push('/dashboard')
+    setMsg('Wrong Password Or Username')
+    setLoading(false)
+  }
+
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+    const { name, value } = e.target
+    setMsg('')
+    setUser((prev) => {
+      return { ...prev, [name]: value }
+    })
+  }
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <section className='border vh-100 d-flex align-items-center justify-content-center flex-column'>
+      <form onSubmit={e => handleSubmit(e)} className='border rounded px-5 py-3'>
+        <h1 className='text-center'>Login</h1>
+        <div className="mb-3">
+          <label htmlFor="username" className="form-label">Username</label>
+          <input onChange={(e) => handleChange(e)} type="text" className="form-control" id="username" name='username' placeholder='Input Username' />
         </div>
-      </div>
+        <div className="mb-3">
+          <label htmlFor="password" className="form-label">Password</label>
+          <input onChange={(e) => handleChange(e)} type="password" className="form-control" id="password" name='password' placeholder='******' />
+        </div>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+        {loading
+          ?
+          <button disabled className="btn btn-primary w-100">
+            <div className="spinner-border text-light" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </button>
+          :
+          <button type="submit" className="btn btn-primary w-100">Submit</button>
+        }
+        {msg.length > 0 && (
+          <p className='text-center text-danger'>{msg}</p>
+        )}
+      </form>
+    </section>
   )
 }
