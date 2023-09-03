@@ -8,7 +8,7 @@ interface FormAdd {
 }
 
 export default function FormAddEmployee(props: FormAdd) {
-    const router= useRouter()
+    const router = useRouter()
     const { onClick } = props
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -23,20 +23,28 @@ export default function FormAddEmployee(props: FormAdd) {
         setLoading(true)
         if (!selectedFile) {
             alert('Please select a photo');
+            setLoading(false)
             return;
         }
 
-        if (selectedFile.size > 300 * 1024) { // 300KB
+        if (selectedFile.size > 300 * 1024) {
             alert('File size exceeds 300KB');
+            setLoading(false)
             return;
         }
         console.log(selectedFile)
-        const res = await axios.post(`http://localhost:8080/employeers`, {...addEmployee}, {
+        const response = await axios.post('http://localhost:8080/employeers', {
+            name: addEmployee.name,
+            alamat: addEmployee.alamat,
+            image: selectedFile
+        }, {
             headers: {
+                'Content-Type': 'multipart/form-data',
                 Authorization: `Bearer ${props.cookies}`
-            }
-        })
-        if (res.request.statusText === 'OK'){
+            },
+        });
+
+        if (response.request.statusText === 'OK') {
             console.log('asd')
             router.push('/dashboard/employee')
         }
@@ -54,12 +62,13 @@ export default function FormAddEmployee(props: FormAdd) {
         if (file?.type === "image/jpeg" || file?.type === "image/jpg") {
             setSelectedFile(file);
         } else {
+            setSelectedFile(null)
             alert("File Harus Bertipe Jpg/Jpeg")
         }
     }
     return (
         <section className='position-absolute z-3 start-0 end-0 vh-100 top-0 d-flex align-items-center justify-content-center flex-column backdrop-blur'>
-            <form onSubmit={(e) => { !loading && handleSubmit(e) }} className='border border-black rounded px-5 py-3 bg-light'>
+            <form encType="multipart/form-data" onSubmit={(e) => { !loading && handleSubmit(e) }} className='border border-black rounded px-5 py-3 bg-light'>
                 <h1 className='fs-4'>Add Employee</h1>
                 <div className="mb-3">
                     <label htmlFor="name" className="form-label">Name</label>
@@ -70,12 +79,12 @@ export default function FormAddEmployee(props: FormAdd) {
                     <input type="text" className="form-control" id="alamat" name='alamat' value={addEmployee.alamat} onChange={(e) => handleChange(e)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="photo" className="form-label">Photo <span className='fs-5 text-pink'>{`(File type jgp/jpeg, Maks: 300kb)`}</span></label>
+                    <label htmlFor="image" className="form-label">Photo <span className='fs-5 text-pink'>{`(File type jgp/jpeg, Maks: 300kb)`}</span></label>
                     <input
                         type="file"
                         className="form-control"
-                        id="photo"
-                        name="photo"
+                        id="image"
+                        name="image"
                         accept="image/jpeg, image/jpg" // Hanya izinkan file JPG/JPEG
                         onChange={handleFileChange}
                     />
