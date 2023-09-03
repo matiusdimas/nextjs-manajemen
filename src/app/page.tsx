@@ -20,7 +20,6 @@ export default function page() {
     if (!checkUsername || !checkPassword) {
       return setLoading(false)
     };
-    setLoading(false)
     const response = await axios.post('http://localhost:8080/login', {
       username: user.username,
       password: user.password,
