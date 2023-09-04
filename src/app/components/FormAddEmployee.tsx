@@ -2,6 +2,7 @@
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import React, { ChangeEvent, useState } from 'react'
+import { mutate } from 'swr'
 interface FormAdd {
     onClick?: () => void
     cookies: string
@@ -32,7 +33,7 @@ export default function FormAddEmployee(props: FormAdd) {
             setLoading(false)
             return;
         }
-        console.log(selectedFile)
+
         const response = await axios.post('http://localhost:8080/employeers', {
             name: addEmployee.name,
             alamat: addEmployee.alamat,
@@ -45,8 +46,7 @@ export default function FormAddEmployee(props: FormAdd) {
         });
 
         if (response.request.statusText === 'OK') {
-            console.log('asd')
-            router.push('/dashboard/employee')
+            mutate(['http://localhost:8080/employeers', props.cookies]);
         }
         setLoading(false)
         onClick!()

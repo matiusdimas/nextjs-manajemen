@@ -2,6 +2,7 @@
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import React, { ChangeEvent, useState } from 'react'
+import { mutate } from 'swr'
 interface FormAdd {
     onClick?: () => void
     cookies: string
@@ -24,7 +25,7 @@ export default function FormAddUser(props: FormAdd) {
                 Authorization: `Bearer ${props.cookies}`
             }
         })
-        router.refresh()
+        mutate(['http://localhost:8080/users', props.cookies]);
         onClick!()
     }
     function handleChange(e: ChangeEvent<HTMLInputElement>) {

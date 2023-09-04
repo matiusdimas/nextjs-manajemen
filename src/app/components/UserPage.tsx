@@ -4,26 +4,38 @@ import FormAddUser from '@/app/components/FormAddUser'
 import Table from '@/app/components/Table'
 import axios from 'axios'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 export default function UserPage({ cookie }: { cookie: string }) {
-    const router = useRouter()
     const arrayDesc = ['Password', 'Role', 'Created At', 'Updated At']
     const [add, setAdd] = useState(false)
+
     function handleAdd() {
         setAdd(!add)
     }
+
+    const [checkUser, setCheckUser] = useState({ username: '', role: '' })
+
+    useEffect(() => {
+        async function handler() {
+            const res = await axios.get('http://localhost:8080/me', { headers: { Authorization: `Bearer ${cookie}` } })
+            console.log(res.data.data[0])
+            setCheckUser({ ...res.data.data[0] })
+            return res
+        }
+        handler()
+    }, [cookie])
+    
     async function Logout() {
         await axios.get('/api')
-        router.push('/')
+        window.location.href = '/';
     }
     return (
         <>
             <div className='container d-grid gap-4'>
 
                 <div className='d-flex mt-5 container justify-content-between'>
-                    <h1 className='fs-3'>Admin, Role Admin</h1>
+                    <h1 className='fs-3'>{checkUser.username.length > 0 && (<>{checkUser.username}, {checkUser.role}</>)}</h1>
                     <div className='d-flex gap-2'>
                         <Link href={'/dashboard'}><Button title='Back To Dashoard' className='btn-primary' /></Link>
                         <Button title='Logout' className='btn-danger' onClick={() => Logout()} />

@@ -1,11 +1,22 @@
+import axios from 'axios'
+import { cookies } from 'next/headers'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 
-export default function page() {
+
+export default async function page() {
+  const cookieStore = cookies()
+  const tokenCookies = cookieStore.get('token')!.value
+  const res = await axios.get('http://localhost:8080/me', {
+    headers: {
+      Authorization: `Bearer ${tokenCookies}`
+    }
+  })
+ 
   return (
     <div className='vh-100 d-flex align-items-center justify-content-center flex-column'>
-      <h1>Hi, User Admin</h1>
+      <h1>Hi {res.data.data[0].username}, Role {res.data.data[0].role} </h1>
       <h3>Select One</h3>
       <div className='d-flex gap-4'>
         <Link href={'/dashboard/employee'}>

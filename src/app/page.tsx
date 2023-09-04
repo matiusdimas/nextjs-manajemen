@@ -38,7 +38,7 @@ export default function page() {
   }
   return (
     <section className='border vh-100 d-flex align-items-center justify-content-center flex-column'>
-      <form onSubmit={e => handleSubmit(e)} className='border rounded px-5 py-3'>
+      <form method='post' onSubmit={e => handleSubmit(e)} className='border rounded px-5 py-3'>
         <h1 className='text-center'>Login</h1>
         <div className="mb-3">
           <label htmlFor="username" className="form-label">Username</label>

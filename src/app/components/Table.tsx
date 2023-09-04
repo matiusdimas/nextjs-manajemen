@@ -4,6 +4,7 @@ import Button from './Button'
 import FormUpdate from './FormUpdate'
 import axios from 'axios';
 import FormUpdateEmployee from './FormUpdateEmployee';
+import useSWR from 'swr';
 
 interface Table {
     title: string
@@ -11,11 +12,18 @@ interface Table {
     cookie: string
 }
 
-export const revalidate = 10;
+const fetchData = async (url: string, cookie: string) => {
+    const response = await fetch(url, {
+        headers: {
+            Authorization: `Bearer ${cookie}`
+        }
+    });
+    const data = await response.json();
+    return data;
+};
 
 export default function Table(props: Table) {
     const { title, arrayDesc } = props
-    const [arrayData, setArrayData] = useState([])
     const [formUpdate, setFormUpdate] = useState([])
     let urls: string
     if (title === "Username") {
@@ -23,36 +31,24 @@ export default function Table(props: Table) {
     } else {
         urls = "http://localhost:8080/employeers"
     }
- 
-    useEffect(() => {
-        async function getData() {
-          try {
-            const res = await axios.get(urls, { headers: { Authorization: `Bearer ${props.cookie}` } });
-            setArrayData(res.data.data)
-          } catch (error) {
-            console.error("Terjadi kesalahan:", error);
-          }
-        }
-      
-        getData();
-      }, []); 
-    
+    const { data, mutate } = useSWR([urls, props.cookie], ([url, cookie]) => fetchData(url, cookie))
+
     async function handleDelete(id: number) {
-        const newData = arrayData.filter((data: any) => data.id !== id);
-        setArrayData(newData)
-        const res = await axios.delete(`${urls}/${id}`, {
+        await axios.delete(`${urls}/${id}`, {
             headers: {
                 Authorization: `Bearer ${props.cookie}`
             }
         })
+        await mutate()
     }
 
     function handleUpdate(id: number) {
-        const formData = arrayData.filter((data: any) => data.id == id);
+        const formData = data.data.filter((data: any) => data.id == id);
         setFormUpdate(formData as [])
     }
 
-    function handleClose() {
+    async function handleClose() {
+        await mutate()
         setFormUpdate([])
     }
     function date(dates: string) {
@@ -84,7 +80,7 @@ export default function Table(props: Table) {
                 <tbody>
                     {title === "Username" ? (
                         <>
-                            {arrayData.map((data: any, i: number) => (
+                            {data && data.data.map((data: any, i: number) => (
                                 <tr key={i}>
                                     <th scope="row">{i + 1}</th>
                                     <td>{data.username}</td>
@@ -101,11 +97,12 @@ export default function Table(props: Table) {
                         </>
                     ) : (
                         <>
-                            {arrayData.map((data: any, i: number) => (
+                            {data && data.data.map((data: any, i: number) => (
                                 <tr key={i}>
                                     <th scope="row">{i + 1}</th>
                                     <td>{data.name}</td>
                                     <td>{data.alamat}</td>
+                                    <td>{data.nm_photo}</td>
                                     <td>{date(data.createdAt)}</td>
                                     <td>{date(data.updatedAt)}</td>
                                     <td className='d-flex gap-2'>

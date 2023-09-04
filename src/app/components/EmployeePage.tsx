@@ -5,11 +5,9 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import FormAddEmployee from './FormAddEmployee'
 import axios from 'axios'
-import { useRouter } from 'next/navigation'
 
 export default function EmployeePage({ cookie }: { cookie: string }) {
-    const router = useRouter()
-    const arrayDesc = ['Alamat', 'Created At', 'Updated At']
+    const arrayDesc = ['Alamat', 'File Name', 'Created At', 'Updated At']
     const [add, setAdd] = useState(false)
     function handleAdd() {
         setAdd(!add)
@@ -18,23 +16,22 @@ export default function EmployeePage({ cookie }: { cookie: string }) {
     useEffect(() => {
         async function handler() {
             const res = await axios.get('http://localhost:8080/me', { headers: { Authorization: `Bearer ${cookie}` } })
-            console.log(res.data.data[0])
             setCheckUser({ ...res.data.data[0] })
             return res
         }
         handler()
-    }, [])
+    }, [cookie])
 
     async function Logout() {
         await axios.get('/api')
-        router.push('/')
+        window.location.href = '/';
     }
     return (
         <>
             <div className='container d-grid gap-4'>
 
                 <div className='d-flex mt-5 container justify-content-between'>
-                    <h1 className='fs-3'>{checkUser.username.length > 0 && (<>{checkUser.username}, {checkUser.role}</>)}</h1>
+                    <h1 className='fs-3'>{checkUser.username.length > 0 && (<>{checkUser.username}, role {checkUser.role}</>)}</h1>
                     <div className='d-flex gap-2'>
                         {checkUser.role === "ADMIN" && (
                             <Link href={'/dashboard'}><Button title='Back To Dashoard' className='btn-primary' /></Link>
